@@ -32,7 +32,9 @@ done
 # https://github.com/Security-Onion-Solutions/security-onion/issues/1118
 # To avoid this, we'll just restart all pcap instances.
 # This is probably a good idea anyway since, in most cases, if one netsniff instance is recording to the wrong date, then all of them are.
+# We suffered restarting was not working perfeclty. So before restarting, kill all netsniff-ng processes and restart the services.
 if [ "$NEED_TO_RESTART" == "yes" ]; then
 	echo "$(date) netsniff-ng date mismatch detected.  Restarting all netsniff-ng instances." >> $LOG
+	killall -9 netsniff-ng
 	nsm_sensor_ps-restart --only-pcap >> $LOG 2>&1
 fi
