@@ -5,6 +5,7 @@ SENSORTAB="/etc/nsm/sensortab"
 INTERFACES=$(grep -v '#' $SENSORTAB | awk '{print $1}')
 LOG="/var/log/nsm/netsniff-sync.log"
 NEED_TO_RESTART="no"
+PID="NOP"
 OS_DATE=$(date +"%Y-%m-%d")
 OS_TIME=$(date +"%H%M")
 
@@ -22,6 +23,7 @@ for i in $INTERFACES; do
        			NETSNIFF_DATE=$(pgrep -af netsniff-ng.*/nsm/sensor_data/$i | cut -d'/' -f6)
 			# Check to see if netsniff's date matches current OS date
         		if [ "$NETSNIFF_DATE" != "$OS_DATE" ]; then
+				PID=$(pgrep -af netsniff-ng.*/nsm/sensor_data/$i  | cut -d' ' -f1)
 				NEED_TO_RESTART="yes"
 			fi
 		fi
@@ -37,4 +39,8 @@ if [ "$NEED_TO_RESTART" == "yes" ]; then
 	echo "$(date) netsniff-ng date mismatch detected.  Restarting all netsniff-ng instances." >> $LOG
 	killall -9 netsniff-ng
 	nsm_sensor_ps-restart --only-pcap >> $LOG 2>&1
+	if [[ $(ps h $PID) ]]; then
+		echo "$PID still exists. Send kill signal." >> $LOG
+		kill -9 $PID
+	fi
 fi
