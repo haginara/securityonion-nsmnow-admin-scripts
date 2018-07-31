@@ -38,9 +38,10 @@ done
 if [ "$NEED_TO_RESTART" == "yes" ]; then
 	echo "$(date) netsniff-ng date mismatch detected.  Restarting all netsniff-ng instances." >> $LOG
 	killall -9 netsniff-ng
-	nsm_sensor_ps-restart --only-pcap >> $LOG 2>&1
+	nsm_sensor_ps-stop --only-pcap >> $LOG 2>&1
 	if [[ $(ps h $PID) ]]; then
 		echo "$PID still exists. Send kill signal." >> $LOG
 		kill -9 $PID
 	fi
+	nsm_sensor_ps-start --only-pcap >> $LOG 2>&1
 fi
